@@ -7,6 +7,7 @@ CREATE TABLE ebaysearchresults (
     sale_date_time varchar(20),
     price real NOT NULL,
     price_shipping real NOT NULL,
-    listing_format varchar(10), 
+    listing_format varchar(10),
+    bid_count integer,
     seller_id varchar(50) NOT NULL
 );
