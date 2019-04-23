@@ -1,13 +1,16 @@
-CREATE TABLE ebaysearchresults (
+/*
+SQL script creates table to upload results from the eBay search results.
+*/
+CREATE TABLE rawebaysearchresults (
     listing_number varchar(25) NOT NULL PRIMARY KEY,
-    listing_link varchar(100) NOT NULL,
     listing_title varchar(255) NOT NULL,
-    brand varchar(25) NOT NULL,
-    model varchar(25) NOT NULL,
+    listing_link varchar(255) NOT NULL,
+    --brand varchar(50) NOT NULL,
+    --model varchar(50) NOT NULL,
     sale_date_time varchar(20),
-    price real NOT NULL,
-    price_shipping real NOT NULL,
-    listing_format varchar(10),
     bid_count integer,
-    seller_id varchar(50) NOT NULL
+    listing_format varchar(20) NOT NULL,
+    price real NOT NULL,
+    price_shipping real NOT NULL
+    --seller_id varchar(50) NOT NULL
 );
