@@ -1,5 +1,6 @@
 /*
- * This class will scrape the html we need from the eBay page
+ * This class will scrape the html we need from the eBay page.
+ * The basic inputs include the search words and (optionally) the price range
  */
 import java.util.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -8,7 +9,6 @@ import org.openqa.selenium.By;
 
 public class EbayScraper {
 	
-	//private String url;
 	private String searchinput;
 	private double lower_price_bound;
 	private double upper_price_bound;
@@ -60,7 +60,6 @@ public class EbayScraper {
 	public String getSearchURL() {
 		return "https://www.ebay.com/sch/i.html?_nkw="+searchinput+"&_in_kw=1&_ex_kw=&_sacat=0&LH_Sold=1&_mPrRngCbx=1&_udlo="+lower_price_bound+"&_udhi="+upper_price_bound+"&_samilow=&_samihi=&_sadis=15&_stpos=60611&_sargn=-1%26saslc%3D1&_salic=1&_sop=12&_dmd=1&_ipg=200&LH_Complete=1&_fosrp=1";
 	}
-	
 
 	public String[][] getScrapedResults() {
 		
@@ -84,22 +83,35 @@ public class EbayScraper {
 	    
 	    int scraped_listings_count = wd_id_list.size();
 	    
-	    String[][] scraped_results = new String[scraped_listings_count][7];
+	    ArrayList<String> wd_format_list = new ArrayList<String>();
 	    
-	    for(int i = 0; i < scraped_listings_count; i++) {
-	    	scraped_results[i][0] = wd_id_list.get(i).getAttribute("iid");
-	    	scraped_results[i][1] =	wd_titles_list.get(i).getText();
-	    	scraped_results[i][2] = wd_links_list.get(i).getAttribute("href");
-	    	scraped_results[i][3] =	wd_times_list.get(i).getText();
-	    	scraped_results[i][4] =	wd_bids_list.get(i).getText();
-	    	scraped_results[i][5] =	wd_prices_list.get(i).getText();
-	    	scraped_results[i][6] = wd_shipping_list.get(i).getText();
+	    for(int k = 0; k < scraped_listings_count; k++) {
+	    	String bid_value = wd_bids_list.get(k).getText();
+	    	if(bid_value.contentEquals("Best offer accepted") || bid_value.contentEquals("Buy It Now")) {
+	    		wd_format_list.add("Sale");
+	    	}
+	    	else {
+	    		wd_format_list.add("Auction");
+	    	}
 	    }
 	    
-	    //close Chrome.
+	    String[][] scraped_results = new String[scraped_listings_count][8];
+	    
+	    for(int i = 0; i < scraped_listings_count; i++) {
+	    	scraped_results[i] = new String[] {
+	    		wd_id_list.get(i).getAttribute("iid"),
+	    		wd_titles_list.get(i).getText(),
+	    		wd_links_list.get(i).getAttribute("href"),
+	    		wd_times_list.get(i).getText(),
+	    		wd_bids_list.get(i).getText(),
+	    		wd_format_list.get(i), 
+	    		wd_prices_list.get(i).getText(),
+	    		wd_shipping_list.get(i).getText(),
+	    	};
+	    }
+	    
 	    driver.close();
 	    return scraped_results;
-		
 	}
 	
 }
