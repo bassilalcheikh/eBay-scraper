@@ -88,7 +88,7 @@ public class EbayScraper {
 	    // prices - good
 	    List<WebElement> wd_prices_list = driver.findElements(By.cssSelector("span[class='bold bidsold']"));
 	    // shipping - good
-	    List<WebElement> wd_shipping_list = driver.findElements(By.cssSelector("span[class='ship']"));
+	    List<WebElement> wd_shipping_list = driver.findElements(By.cssSelector("li[class='lvshipping']"));
 	    
 	    int scraped_listings_count = wd_id_list.size();
 	    
@@ -118,7 +118,6 @@ public class EbayScraper {
 	    		wd_format_list.get(i), 
 	    		Double.toString(DC.extractDouble(wd_prices_list.get(i).getText())),
 	    		Double.toString(DC.extractDouble(wd_shipping_list.get(i).getText())),
-	    		//wd_shipping_list.get(i).getText()
 	    	};
 	    }
 	    
