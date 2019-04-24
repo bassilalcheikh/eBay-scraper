@@ -13,6 +13,7 @@ public class EbayScraper {
 	private double lower_price_bound;
 	private double upper_price_bound;
 	private ChromeDriver driver; 
+	private String year;
 	
 	// CONSTRUCTORS
 	public EbayScraper() {
@@ -56,6 +57,14 @@ public class EbayScraper {
 		this.searchinput = searchinput;
 	}
 	
+	public String getYear() {
+		return year;
+	}
+
+	public void setYear(String year) {
+		this.year = year;
+	}
+
 	// INSTANCE METHODS	
 	public String getSearchURL() {
 		return "https://www.ebay.com/sch/i.html?_nkw="+searchinput+"&_in_kw=1&_ex_kw=&_sacat=0&LH_Sold=1&_mPrRngCbx=1&_udlo="+lower_price_bound+"&_udhi="+upper_price_bound+"&_samilow=&_samihi=&_sadis=15&_stpos=60611&_sargn=-1%26saslc%3D1&_salic=1&_sop=12&_dmd=1&_ipg=200&LH_Complete=1&_fosrp=1";
@@ -97,20 +106,23 @@ public class EbayScraper {
 	    
 	    String[][] scraped_results = new String[scraped_listings_count][8];
 	    
+	    DataCleanup DC = new DataCleanup();
+	    
 	    for(int i = 0; i < scraped_listings_count; i++) {
 	    	scraped_results[i] = new String[] {
 	    		wd_id_list.get(i).getAttribute("iid"),
 	    		wd_titles_list.get(i).getText(),
 	    		wd_links_list.get(i).getAttribute("href"),
-	    		wd_times_list.get(i).getText(),
-	    		wd_bids_list.get(i).getText(),
+	    		DC.formatDateTime(wd_times_list.get(i).getText(), year),
+	    		Integer.toString(DC.extractInteger(wd_bids_list.get(i).getText())),
 	    		wd_format_list.get(i), 
-	    		wd_prices_list.get(i).getText(),
-	    		wd_shipping_list.get(i).getText(),
+	    		Double.toString(DC.extractDouble(wd_prices_list.get(i).getText())),
+	    		Double.toString(DC.extractDouble(wd_shipping_list.get(i).getText())),
+	    		//wd_shipping_list.get(i).getText()
 	    	};
 	    }
 	    
-	    driver.close();
+	    //driver.close();
 	    return scraped_results;
 	}
 	
