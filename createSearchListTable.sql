@@ -8,10 +8,10 @@ INSERT INTO searchlist VALUES
 */
 
 CREATE TABLE searchlist(
-    search_id int NOT NULL PRIMARY KEY,
-    search_keywords varchar(255) NOT NULL,
-    price_min real,
-    price_max real,
-    item_type varchar(100),
-    item_quantity int
+    search_id       int             NOT NULL PRIMARY KEY,
+    search_keywords varchar(255)    NOT NULL,
+    price_min       real,
+    price_max       real,
+    item_type       varchar(100),
+    item_quantity   int
 );
