@@ -9,27 +9,33 @@ import org.openqa.selenium.By;
 
 public class EbayScraper {
 	
-	private String searchinput;
+	private String searchBrand;
+	private String searchModel;
 	private double lower_price_bound;
 	private double upper_price_bound;
 	private ChromeDriver driver; 
 	private String year;
+	private ArrayList<String> dataTypes;
 	
-	// CONSTRUCTORS
+	// CONSTRUCTORS 
 	public EbayScraper() {
-		searchinput = "";
+		searchBrand = "";
+		searchModel = "";
 		lower_price_bound = 0;
 		upper_price_bound = 1000000;
 		System.setProperty("webdriver.chrome.driver", "/Users/bassilalcheikh/eclipse-workspace/ChronoPriceWatch/chromedriver");
 		driver = new ChromeDriver();
+		dataTypes = new ArrayList<String>();
 	}
 	
-	public EbayScraper(String given_search_keywords) {
-		searchinput = given_search_keywords;
+	public EbayScraper(String given_search_brand, String given_search_model) {
+		searchBrand = given_search_brand;
+		searchModel = given_search_model;
 		lower_price_bound = 0;
 		upper_price_bound = 1000000;
 		System.setProperty("webdriver.chrome.driver", "/Users/bassilalcheikh/eclipse-workspace/ChronoPriceWatch/chromedriver");
 		driver = new ChromeDriver();
+		dataTypes = new ArrayList<String>();
 	}
 	
 	// GETTERS & SETTERS
@@ -49,12 +55,20 @@ public class EbayScraper {
 		this.upper_price_bound = upper_price_bound;
 	}
 
-	public String getSearchinput() {
-		return searchinput;
+	public String getSearchBrand() {
+		return searchBrand;
 	}
 
-	public void setSearchinput(String searchinput) {
-		this.searchinput = searchinput;
+	public void setSearchBrand(String inputBrand) {
+		this.searchBrand = inputBrand;
+	}
+	
+	public String getSearchModel() {
+		return searchModel;
+	}
+
+	public void setSearchModel(String inputModel) {
+		this.searchModel = inputModel;
 	}
 	
 	public String getYear() {
@@ -64,16 +78,29 @@ public class EbayScraper {
 	public void setYear(String year) {
 		this.year = year;
 	}
+	
+
+	public ArrayList<String> getDataTypes() {
+		return dataTypes;
+	}
+
+	public void setDataTypes(ArrayList<String> dataTypes) {
+		this.dataTypes = dataTypes;
+	}
 
 	// INSTANCE METHODS	
 	public String getSearchURL() {
-		return "https://www.ebay.com/sch/i.html?_nkw="+searchinput+"&_in_kw=1&_ex_kw=&_sacat=0&LH_Sold=1&_mPrRngCbx=1&_udlo="+lower_price_bound+"&_udhi="+upper_price_bound+"&_samilow=&_samihi=&_sadis=15&_stpos=60611&_sargn=-1%26saslc%3D1&_salic=1&_sop=12&_dmd=1&_ipg=200&LH_Complete=1&_fosrp=1";
+		return "https://www.ebay.com/sch/i.html?_nkw="+searchBrand+" "+searchModel+"&_in_kw=1&_ex_kw=&_sacat=0&LH_Sold=1&_mPrRngCbx=1&_udlo="+lower_price_bound+"&_udhi="+upper_price_bound+"&_samilow=&_samihi=&_sadis=15&_stpos=60611&_sargn=-1%26saslc%3D1&_salic=1&_sop=12&_dmd=1&_ipg=200&LH_Complete=1&_fosrp=1";
 	}
 
 	public String[][] getScrapedResults() {
 		
 		String baseUrl = getSearchURL();
 	    driver.get(baseUrl);
+	    
+	    // we give a specific "type" setting here, because the following is specific to the html tag extractions below
+	    String[] arrayTypes = {"String", "String", "String", "String", "int", "String", "String", "double", "double", "String", "String"};
+	    dataTypes = new ArrayList<String>(Arrays.asList(arrayTypes));
 	    
 	    // IDs - OK; need to use .getAttribute("iid");
 	    List<WebElement> wd_id_list = driver.findElements(By.cssSelector("div[class='lvpic pic img left']"));
@@ -82,10 +109,12 @@ public class EbayScraper {
 	    // links - good
 	    List<WebElement> wd_links_list = driver.findElements(By.cssSelector("a[class='vip']"));
 	    // auction times - good
-	    List<WebElement> wd_times_list = driver.findElements(By.cssSelector("span[class='tme']"));
+	    List<WebElement> wd_times_list = driver.findElements(By.cssSelector("span[class='tme']"));	    
 	    // bid counts - good
 	    List<WebElement> wd_bids_list = driver.findElements(By.cssSelector("li[class='lvformat']"));
-	    // prices - good
+	    // conditions - good
+	    List<WebElement> wd_conditions_list = driver.findElements(By.cssSelector("div[class='lvsubtitle']"));
+	    // prices - ISSUE with multiple prices
 	    List<WebElement> wd_prices_list = driver.findElements(By.cssSelector("span[class='bold bidsold']"));
 	    // shipping - good
 	    List<WebElement> wd_shipping_list = driver.findElements(By.cssSelector("li[class='lvshipping']"));
@@ -103,25 +132,28 @@ public class EbayScraper {
 	    		wd_format_list.add("Auction");
 	    	}
 	    }
-	    
-	    String[][] scraped_results = new String[scraped_listings_count][8];
+	    // ================================================================================================
+	    String[][] scraped_results = new String[scraped_listings_count][11];
 	    
 	    DataCleanup DC = new DataCleanup();
 	    
 	    for(int i = 0; i < scraped_listings_count; i++) {
 	    	scraped_results[i] = new String[] {
-	    		wd_id_list.get(i).getAttribute("iid"),
-	    		wd_titles_list.get(i).getText(),
-	    		wd_links_list.get(i).getAttribute("href"),
-	    		DC.formatDateTime(wd_times_list.get(i).getText(), year),
-	    		Integer.toString(DC.extractInteger(wd_bids_list.get(i).getText())),
-	    		wd_format_list.get(i), 
-	    		Double.toString(DC.extractDouble(wd_prices_list.get(i).getText())),
+	    		wd_id_list.get(i).getAttribute("iid"), // listing ID
+	    		DC.removeApostrophe(wd_titles_list.get(i).getText()), // listing title
+	    		DC.removeApostrophe(wd_links_list.get(i).getAttribute("href")), // link
+	    		DC.formatDateTime(wd_times_list.get(i).getText(), year), // date & time
+	    		Integer.toString(DC.extractInteger(wd_bids_list.get(i).getText())), // bids
+	    		wd_format_list.get(i), // listing format
+	    		wd_conditions_list.get(i).getText(), // place condition here
+	    		Double.toString(DC.extractDouble(DC.extractFirstAmount(wd_prices_list.get(i).getText()))),
 	    		Double.toString(DC.extractDouble(wd_shipping_list.get(i).getText())),
+	    		this.searchBrand,
+	    		this.searchModel
 	    	};
 	    }
-	    
 	    //driver.close();
+	    
 	    return scraped_results;
 	}
 	

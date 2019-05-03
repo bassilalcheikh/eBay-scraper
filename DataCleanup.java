@@ -6,7 +6,11 @@ import java.io.UnsupportedEncodingException;
 public class DataCleanup {
 	
 	public DataCleanup() {
-		
+	}
+	
+	public static String extractFirstAmount(String raw_price_string) {
+	    int first_amount_index = raw_price_string.indexOf('.')+2;
+	    return  raw_price_string.substring(0, first_amount_index+1);
 	}
 	
 	public static double extractDouble(String stringAmount) {
@@ -28,7 +32,7 @@ public class DataCleanup {
 		}
 		// the following code assumes the double value is "0.00" if no numbers are presented
 		if(newNumberString.length() > 0) {
-			return Double.valueOf(newNumberString); // can't seem to convert this to two decimal points
+			return Double.valueOf(newNumberString); // PROBLEM HERE
 		}
 		else {
 			return 0.00; // i.e., "free shipping" gets reported as 0.00 
@@ -57,7 +61,7 @@ public class DataCleanup {
 			return Integer.valueOf(newNumberString); 
 		}
 		else {
-			return 0; // i.e., "bids" gets reported as 0.00 
+			return 0; // i.e., "bids" gets reported as 0
 		} 
 	}
 	
@@ -125,4 +129,23 @@ public class DataCleanup {
 		
 		return yearString+"-"+monthString+"-"+dayString+" "+hourMinute+":00.000";
 	}
+	
+	public static String removeApostrophe(String text) {
+		// remove apostrophe issue
+		String newString = "";
+		byte[] bytes;
+		try {
+			bytes = text.getBytes("US-ASCII");
+			for(int b = 0; b < bytes.length; b++) {				
+				newString += Character.toString((char) bytes[b]);
+				if(bytes[b]==39){
+					newString += "'";
+				}
+			}
+		} catch (UnsupportedEncodingException uee) {
+			uee.printStackTrace();
+		}
+		return newString;
+	}
+	
 }

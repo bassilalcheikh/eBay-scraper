@@ -13,7 +13,6 @@ public class GenSQLStatements {
 	// (will probably not use)
 	public GenSQLStatements(String given_tableName) {
 		tableName = given_tableName;
-		//valueLimit = given_valueLimit;		
 	}
 
 	public String encapsulation(String data_type, String data_value) {
@@ -44,9 +43,22 @@ public class GenSQLStatements {
 		}
 		return insert_statement+encapsulation(given_data_types.get(dimension-1), given_data_vals.get(dimension-1))+")";
 	}
-	
-	public String getInsertStatement(ArrayList<String> given_data_vals, ArrayList<String> given_data_types) {
+	/*
+	public String getInsertStatement(ArrayList<String> given_data_types, ArrayList<String> given_data_vals) {
 		return "INSERT INTO "+tableName+" VALUES "+getValueStatement(given_data_vals, given_data_types);
+	}
+	*/
+	public String getInsertStatement(String[][] given_data_vals, ArrayList<String> given_data_types) {
+		String masterInsertStatement = "INSERT INTO "+tableName+" VALUES ";
+		int data_count = given_data_vals.length;
+		
+		for(int datapoint = 0; datapoint < data_count-1; datapoint++) {
+			ArrayList<String> singleDataArray = (new ArrayList<String>(Arrays.asList(given_data_vals[datapoint])));
+			masterInsertStatement += getValueStatement(singleDataArray, given_data_types)+",\n";
+		}
+		masterInsertStatement += getValueStatement((new ArrayList<String>(Arrays.asList(given_data_vals[data_count-1]))), given_data_types);
+	
+		return masterInsertStatement+";";
 	}
 
 }
