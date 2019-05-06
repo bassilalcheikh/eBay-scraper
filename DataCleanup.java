@@ -1,8 +1,10 @@
-import java.io.UnsupportedEncodingException;
+package com.project.watchdatabase;
 
 /*
  * This class holds methods that will clean up the data.
  */
+import java.io.UnsupportedEncodingException;
+
 public class DataCleanup {
 	
 	public DataCleanup() {

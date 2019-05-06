@@ -1,13 +1,18 @@
+package com.project.watchdatabase;
+
 /*
+ * @author Bassil Alcheikh
+ * 
  * This class will scrape the html we need from the eBay page.
  * The basic inputs include the search words and (optionally) the price range
  */
 import java.util.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.By;
 
-public class EbayScraper {
+public class EbayScraper implements Scraper{
 	
 	private String searchBrand;
 	private String searchModel;
@@ -16,26 +21,35 @@ public class EbayScraper {
 	private ChromeDriver driver; 
 	private String year;
 	private ArrayList<String> dataTypes;
+	private ChromeOptions chromeOptions;
 	
 	// CONSTRUCTORS 
+	
+	/*
+	 * The default constructor below will be used in future projects; for now, use the cconstructor on the bottom
 	public EbayScraper() {
 		searchBrand = "";
 		searchModel = "";
 		lower_price_bound = 0;
 		upper_price_bound = 1000000;
 		System.setProperty("webdriver.chrome.driver", "/Users/bassilalcheikh/eclipse-workspace/ChronoPriceWatch/chromedriver");
-		driver = new ChromeDriver();
 		dataTypes = new ArrayList<String>();
+		chromeOptions = new ChromeOptions();
+		chromeOptions.addArguments("headless"); // comment this out if you want to see the browser in action
+		driver = new ChromeDriver(chromeOptions);
 	}
+	*/
 	
-	public EbayScraper(String given_search_brand, String given_search_model) {
+	public EbayScraper(String given_search_brand, String given_search_model, String directory_path) {
 		searchBrand = given_search_brand;
 		searchModel = given_search_model;
 		lower_price_bound = 0;
 		upper_price_bound = 1000000;
-		System.setProperty("webdriver.chrome.driver", "/Users/bassilalcheikh/eclipse-workspace/ChronoPriceWatch/chromedriver");
-		driver = new ChromeDriver();
+		System.setProperty("webdriver.chrome.driver", directory_path+"/chromedriver");
 		dataTypes = new ArrayList<String>();
+		chromeOptions = new ChromeOptions();
+		chromeOptions.addArguments("headless"); // comment this out if you want to see the browser in action
+		driver = new ChromeDriver(chromeOptions);
 	}
 	
 	// GETTERS & SETTERS
@@ -78,7 +92,6 @@ public class EbayScraper {
 	public void setYear(String year) {
 		this.year = year;
 	}
-	
 
 	public ArrayList<String> getDataTypes() {
 		return dataTypes;
@@ -135,26 +148,30 @@ public class EbayScraper {
 	    // ================================================================================================
 	    String[][] scraped_results = new String[scraped_listings_count][11];
 	    
-	    DataCleanup DC = new DataCleanup();
+	    //DataCleanup DC = new DataCleanup();
 	    
 	    for(int i = 0; i < scraped_listings_count; i++) {
 	    	scraped_results[i] = new String[] {
 	    		wd_id_list.get(i).getAttribute("iid"), // listing ID
-	    		DC.removeApostrophe(wd_titles_list.get(i).getText()), // listing title
-	    		DC.removeApostrophe(wd_links_list.get(i).getAttribute("href")), // link
-	    		DC.formatDateTime(wd_times_list.get(i).getText(), year), // date & time
-	    		Integer.toString(DC.extractInteger(wd_bids_list.get(i).getText())), // bids
+	    		DataCleanup.removeApostrophe(wd_titles_list.get(i).getText()), // listing title
+	    		DataCleanup.removeApostrophe(wd_links_list.get(i).getAttribute("href")), // link
+	    		DataCleanup.formatDateTime(wd_times_list.get(i).getText(), year), // date & time
+	    		Integer.toString(DataCleanup.extractInteger(wd_bids_list.get(i).getText())), // bids
 	    		wd_format_list.get(i), // listing format
 	    		wd_conditions_list.get(i).getText(), // place condition here
-	    		Double.toString(DC.extractDouble(DC.extractFirstAmount(wd_prices_list.get(i).getText()))),
-	    		Double.toString(DC.extractDouble(wd_shipping_list.get(i).getText())),
+	    		Double.toString(DataCleanup.extractDouble(DataCleanup.extractFirstAmount(wd_prices_list.get(i).getText()))),
+	    		Double.toString(DataCleanup.extractDouble(wd_shipping_list.get(i).getText())),
 	    		this.searchBrand,
 	    		this.searchModel
 	    	};
 	    }
-	    //driver.close();
-	    
+	    driver.close();
 	    return scraped_results;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "EbayScraper [searchBrand=" + searchBrand + ", searchModel=" + searchModel + "]";
+	}
+		
 }
