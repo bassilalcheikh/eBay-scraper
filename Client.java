@@ -9,7 +9,7 @@ import java.nio.file.Paths; // we will use this once, just for getting user's di
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Scanner;
-
+// I will eventually replace the chart with a better/more flexible graphics library
 import org.knowm.xchart.QuickChart;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
@@ -35,9 +35,9 @@ public class Client {
 				
 				ArrayList<String> columns = null;
 				ResultSet rs_column_results = null;
-				SQLExecutor se_i = null;
+				SQLiteExecutor se_i = null;
 				try {
-					se_i = new SQLExecutor(dataBase, "searchlist");
+					se_i = new SQLiteExecutor(dataBase, "searchlist");
 					columns = se_i.getTableColumns();
 					
 					String[] desiredColumns =  new String[] {columns.get(1), columns.get(2), columns.get(3), columns.get(4)};
@@ -76,7 +76,7 @@ public class Client {
 //================================================================================================================================================
 		
 			else if (choice.toLowerCase().contentEquals("s")){
-				SQLExecutor sq_s = new SQLExecutor(dataBase, null);
+				SQLiteExecutor sq_s = new SQLiteExecutor(dataBase, null);
 				
 				System.out.println("Enter '1' for searchlist and '2' for rawebaysearchresults:");
 				
@@ -94,10 +94,10 @@ public class Client {
 			}
 //================================================================================================================================================
 			else if (choice.toLowerCase().contentEquals("v")) {				
-				SQLExecutor sq_v = new SQLExecutor(dataBase, "searchlist");
+				SQLiteExecutor sq_v = new SQLiteExecutor(dataBase, "searchlist");
 				
 				String[] menuOptionsColumns = new String[] {"search_id", "search_brand", "search_model"};
-				ArrayList<String[]> menu_options = sq_v.transformResultSet(sq_v.selectData(menuOptionsColumns), 3);
+				ArrayList<String[]> menu_options = sq_v.transformResultSet(sq_v.selectData(menuOptionsColumns));
 				
 				for(int i = 0; i < menu_options.size(); i++) {
 					for(int j = 0; j < 3; j++) {
@@ -117,16 +117,27 @@ public class Client {
 					String chart_title = "Prices for "+chosen_brand+" "+chosen_model;
 					String key_details = "Realized Prices from eBay";
 					
-					String query_data = "SELECT * FROM rawebaysearchresults WHERE search_brand = ?, search_model = ?";
-					// left off here
-					/*
-					XYChart chart = QuickChart.getChart(chart_title, "Time", "Dollars", key_details, dates, prices);
+					// note: the below code should be (practically) immune against SQL injections, because the chosen brand  
+					// and chosen model values come directly from admin-input values
+					String query_code = "SELECT julianday(sale_date_time), price FROM rawebaysearchresults WHERE brand = '"+chosen_brand+"' AND model = '"+chosen_model+"' ORDER BY sale_date_time ASC;";
+					ArrayList<String[]> query_code_results = sq_v.plainSelect(query_code); 
+					
+					int data_points = query_code_results.size();
+					double[] datetimes = new double[data_points];
+					double[] prices = new double[data_points];
+					
+					for(int k = 0; k < data_points; k++ ) {
+						datetimes[k] = Double.valueOf(query_code_results.get(k)[0]);
+						prices[k] = Double.valueOf(query_code_results.get(k)[1]);
+					}
+										
+					XYChart chart = QuickChart.getChart(chart_title, "Time (in Julian days)", "Dollars", key_details, datetimes, prices);
 
 				    // Shows it
 				    SwingWrapper<XYChart> sw = new SwingWrapper<XYChart>(chart);
 				    sw.displayChart();
-				    */
 				    
+				    sq_v.close();
 				}
 				else {
 					System.out.println("Sorry, option doesn't exist.");
@@ -151,7 +162,7 @@ public class Client {
 				sqlScripts.add(createEbayResults);
 				 
 				Scanner fileScanner;
-				SQLExecutor se_c = new SQLExecutor(dataBase, null);
+				SQLiteExecutor se_c = new SQLiteExecutor(dataBase, null);
 								
 				for(int f = 0; f < sqlScripts.size(); f++) {
 					

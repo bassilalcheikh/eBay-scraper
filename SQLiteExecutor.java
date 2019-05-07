@@ -1,5 +1,4 @@
 package com.project.watchdatabase;
-
 /* SQL Execution
  * 
  * @author Bassil Alcheikh
@@ -51,9 +50,9 @@ public class SQLiteExecutor implements SQLExecutor {
 	}
 
 	// transforms resultset into ArrayList<String[]>
-	public ArrayList<String[]> transformResultSet(ResultSet prs, int column_count) throws SQLException {
+	public ArrayList<String[]> transformResultSet(ResultSet prs) throws SQLException {
 		// converts the ResultSet into an iterable list structure
-		int dim = column_count;
+		int dim = prs.getMetaData().getColumnCount();
 		
 		ArrayList<String[]> tableresults = new ArrayList<String[]>();
 		while( prs.next() ){
@@ -76,13 +75,16 @@ public class SQLiteExecutor implements SQLExecutor {
 		PreparedStatement prepstmt = c.prepareStatement(code); 
 		prepstmt.executeUpdate(); //ResultSet object	
 	}
-	/*
-	// like the above method, but returns data, stores it into 
-	public void plainExecute(String code) throws SQLException {
-		PreparedStatement prepstmt = c.prepareStatement(code); 
-		prepstmt.executeUpdate(); //ResultSet object	
+	
+	// like the above method, but returns results, stores them into 2-d array 
+	public ArrayList<String[]> plainSelect(String code) throws SQLException {
+		
+		PreparedStatement pstmt = c.prepareStatement(code); 
+		ResultSet retrieved_data = pstmt.executeQuery(); 
+
+		return transformResultSet(retrieved_data);
 	}
-	*/
+	
 	// select data from the specified columns
 	public ResultSet selectData(String[] given_columns) throws SQLException {
 		// input: column names (String array); output: results from db table (ResultSet Object)
@@ -101,13 +103,12 @@ public class SQLiteExecutor implements SQLExecutor {
 	// view entire contents of a table
 	public void viewTableData(String tableName) throws SQLException {
 		// input: column names (String array); output: results from db table (ResultSet Object)
-		
 		String search_string = "SELECT * FROM "+tableName+";";
 		
 		PreparedStatement pstmt = c.prepareStatement(search_string); 
 		ResultSet results = pstmt.executeQuery(); 
 		
-		ArrayList<String[]> listedResults = transformResultSet(results, results.getMetaData().getColumnCount());
+		ArrayList<String[]> listedResults = transformResultSet(results);
 		
 		for(int i = 0; i < listedResults.size(); i++) {
 			for(int j = 0; j < listedResults.get(0).length; j++) {
@@ -115,7 +116,6 @@ public class SQLiteExecutor implements SQLExecutor {
 			}
 			System.out.println("\n");
 		}
-		
 	}
 	
 	// inserts data into table
@@ -124,7 +124,7 @@ public class SQLiteExecutor implements SQLExecutor {
 		try{	
 			c.setAutoCommit(false);	
 			// create insert statement
-			String insertDataScript = "INSERT INTO "+tableName+" VALUES (";
+			String insertDataScript = "INSERT OR IGNORE INTO "+tableName+" VALUES (";
 			for(int q = 0; q < data_types.size()-1; q++) {
 				insertDataScript += "?, ";
 			}
@@ -136,15 +136,12 @@ public class SQLiteExecutor implements SQLExecutor {
 				for(int j = 1; j < data_types.size()+1; j++) {
 					
 					if(data_types.get(j-1).toLowerCase().equals("double")) {
-						//System.out.print("made it to DOUBLE and value is "+data_values[i][j-1]+"\n");
 						stmt.setDouble(j, Double.valueOf(data_values[i][j-1]));
 					}
 					else if(data_types.get(j-1).toLowerCase().equals("int")) {
-						//System.out.print("made it to INT and value is "+data_values[i][j-1]+"\n");
 						stmt.setInt(j, Integer.valueOf(data_values[i][j-1]));
 					}
 					else if(data_types.get(j-1).toLowerCase().equals("string")) {
-						//System.out.print("made it to STRING and value is "+data_values[i][j-1]+"\n");
 						stmt.setString(j, data_values[i][j-1]);
 					}
 					else {
@@ -158,7 +155,11 @@ public class SQLiteExecutor implements SQLExecutor {
 			c.setAutoCommit(true);
 	        stmt.close();
 		} 
+		catch ( SQLException s ) {
+			System.err.println(s.getErrorCode() ); // if there's a "duplicate" issue, code will be 19
+		}
 		catch ( Exception e ) {
+			
 			System.err.println( e.getClass().getName() + ": " + e.getMessage() );
 			System.exit(0);
 		}

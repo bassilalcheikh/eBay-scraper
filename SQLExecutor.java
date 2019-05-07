@@ -12,7 +12,7 @@ public interface SQLExecutor {
 	
 	public ArrayList<String> getTableColumns() throws SQLException ;
 	
-	public ArrayList<String[]> transformResultSet(ResultSet prs, int column_count) throws SQLException;
+	public ArrayList<String[]> transformResultSet(ResultSet prs) throws SQLException;
 	
 	public void plainExecute(String code) throws SQLException;
 	
