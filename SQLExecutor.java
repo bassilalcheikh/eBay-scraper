@@ -5,11 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public interface SQLExecutor {
-	
-	public String getTableName();
-	
-	public void setTableName(String tableName);
-	
+
 	public ArrayList<String> getTableColumns() throws SQLException ;
 	
 	public ArrayList<String[]> transformResultSet(ResultSet prs) throws SQLException;
