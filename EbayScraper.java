@@ -164,6 +164,7 @@ public class EbayScraper implements Scraper{
 	    	};
 	    }
 	    driver.close();
+	    driver.quit();
 	    return scraped_results;
 	}
 	@Override
