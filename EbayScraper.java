@@ -1,5 +1,6 @@
 package com.project.watchdatabase;
 
+import java.sql.SQLException;
 /*
  * @author Bassil Alcheikh
  * 
@@ -25,7 +26,7 @@ public class EbayScraper implements Scraper{
 	
 	// CONSTRUCTORS 
 	/*
-	 * The default constructor below will be used in future projects; for now, use the cconstructor on the bottom
+	 * The default constructor below will be used in future projects; for now, use the constructor on the bottom
 	public EbayScraper() {
 		searchBrand = "";
 		searchModel = "";
@@ -107,65 +108,73 @@ public class EbayScraper implements Scraper{
 	}
 
 	public String[][] getScrapedResults() {
-		// this method scrapes data from eBay; without this, the class is completely useless.
+		String[][] scraped_results = null;
 		String baseUrl = getSearchURL();
 	    driver.get(baseUrl);
 	    
-	    // we give a specific "type" setting here, because the following is specific to the html tag extractions below
-	    String[] arrayTypes = {"String", "String", "String", "String", "int", "String", "String", "double", "double", "String", "String"};
-	    dataTypes = new ArrayList<String>(Arrays.asList(arrayTypes));
-	    
-	    // IDs 
-	    List<WebElement> wd_id_list = driver.findElements(By.cssSelector("div[class='lvpic pic img left']"));
-	    // titles 
-	    List<WebElement> wd_titles_list = driver.findElements(By.cssSelector("h3[class='lvtitle']"));
-	    // links 
-	    List<WebElement> wd_links_list = driver.findElements(By.cssSelector("a[class='vip']"));
-	    // auction times 
-	    List<WebElement> wd_times_list = driver.findElements(By.cssSelector("span[class='tme']"));	    
-	    // bid counts 
-	    List<WebElement> wd_bids_list = driver.findElements(By.cssSelector("li[class='lvformat']"));
-	    // conditions 
-	    List<WebElement> wd_conditions_list = driver.findElements(By.cssSelector("div[class='lvsubtitle']"));
-	    // prices 
-	    List<WebElement> wd_prices_list = driver.findElements(By.cssSelector("span[class='bold bidsold']"));
-	    // shipping cost
-	    List<WebElement> wd_shipping_list = driver.findElements(By.cssSelector("li[class='lvshipping']"));
-	    
-	    int scraped_listings_count = wd_id_list.size();
-	    
-	    ArrayList<String> wd_format_list = new ArrayList<String>();
-	    // the following looks at the bid count; if 0, then the listing was a "buy it now" rather than an auction
-	    for(int k = 0; k < scraped_listings_count; k++) {
-	    	String bid_value = wd_bids_list.get(k).getText();
-	    	if(bid_value.contentEquals("Best offer accepted") || bid_value.contentEquals("Buy It Now")) {
-	    		wd_format_list.add("Sale");
-	    	}
-	    	else {
-	    		wd_format_list.add("Auction");
-	    	}
-	    }
-	    // ================================================================================================
-	    String[][] scraped_results = new String[scraped_listings_count][11];
-	    
-	    for(int i = 0; i < scraped_listings_count; i++) {
-	    	scraped_results[i] = new String[] {
-	    		wd_id_list.get(i).getAttribute("iid"), // listing ID
-	    		DataCleanup.removeApostrophe(wd_titles_list.get(i).getText()), // listing title
-	    		DataCleanup.removeApostrophe(wd_links_list.get(i).getAttribute("href")), // link
-	    		DataCleanup.formatDateTime(wd_times_list.get(i).getText(), year), // date & time
-	    		Integer.toString(DataCleanup.extractInteger(wd_bids_list.get(i).getText())), // bids
-	    		wd_format_list.get(i), // listing format
-	    		wd_conditions_list.get(i).getText(), // place condition here
-	    		Double.toString(DataCleanup.extractDouble(DataCleanup.extractFirstAmount(wd_prices_list.get(i).getText()))),
-	    		Double.toString(DataCleanup.extractDouble(wd_shipping_list.get(i).getText())),
-	    		this.searchBrand,
-	    		this.searchModel
-	    	};
-	    }
-	    driver.close();
+		try {
+			// this method scrapes data from eBay; without this, the class is completely useless.
+			
+		    // we give a specific "type" setting here, because the following is specific to the html tag extractions below
+		    String[] arrayTypes = {"String", "String", "String", "String", "int", "String", "String", "double", "double", "String", "String"};
+		    dataTypes = new ArrayList<String>(Arrays.asList(arrayTypes));
+		    
+		    // IDs 
+		    List<WebElement> wd_id_list = driver.findElements(By.cssSelector("div[class='lvpic pic img left']"));
+		    // titles 
+		    List<WebElement> wd_titles_list = driver.findElements(By.cssSelector("h3[class='lvtitle']"));
+		    // links 
+		    List<WebElement> wd_links_list = driver.findElements(By.cssSelector("a[class='vip']"));
+		    // auction times 
+		    List<WebElement> wd_times_list = driver.findElements(By.cssSelector("span[class='tme']"));	    
+		    // bid counts 
+		    List<WebElement> wd_bids_list = driver.findElements(By.cssSelector("li[class='lvformat']"));
+		    // conditions 
+		    List<WebElement> wd_conditions_list = driver.findElements(By.cssSelector("div[class='lvsubtitle']"));
+		    // prices 
+		    List<WebElement> wd_prices_list = driver.findElements(By.cssSelector("span[class='bold bidsold']"));
+		    // shipping cost
+		    List<WebElement> wd_shipping_list = driver.findElements(By.cssSelector("li[class='lvshipping']"));
+		    
+		    int scraped_listings_count = wd_id_list.size();
+		    
+		    ArrayList<String> wd_format_list = new ArrayList<String>();
+		    // the following looks at the bid count; if 0, then the listing was a "buy it now" rather than an auction
+		    for(int k = 0; k < scraped_listings_count; k++) {
+		    	String bid_value = wd_bids_list.get(k).getText();
+		    	if(bid_value.contentEquals("Best offer accepted") || bid_value.contentEquals("Buy It Now")) {
+		    		wd_format_list.add("Sale");
+		    	}
+		    	else {
+		    		wd_format_list.add("Auction");
+		    	}
+		    }
+		    // ================================================================================================
+		    scraped_results = new String[scraped_listings_count][11];
+		    
+		    for(int i = 0; i < scraped_listings_count; i++) {
+		    	scraped_results[i] = new String[] {
+		    		wd_id_list.get(i).getAttribute("iid"), // listing ID
+		    		DataCleanup.removeApostrophe(wd_titles_list.get(i).getText()), // listing title
+		    		DataCleanup.removeApostrophe(wd_links_list.get(i).getAttribute("href")), // link
+		    		DataCleanup.formatDateTime(wd_times_list.get(i).getText(), year), // date & time
+		    		Integer.toString(DataCleanup.extractInteger(wd_bids_list.get(i).getText())), // bids
+		    		wd_format_list.get(i), // listing format
+		    		wd_conditions_list.get(i).getText(), // place condition here
+		    		Double.toString(DataCleanup.extractDouble(DataCleanup.extractFirstAmount(wd_prices_list.get(i).getText()))),
+		    		Double.toString(DataCleanup.extractDouble(wd_shipping_list.get(i).getText())),
+		    		this.searchBrand,
+		    		this.searchModel
+		    	};
+		    }	
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		driver.close();
 	    driver.quit();
-	    return scraped_results;
+		return scraped_results;
+		
 	}
 	@Override
 	public String toString() {
