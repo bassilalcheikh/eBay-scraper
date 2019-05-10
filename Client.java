@@ -151,15 +151,17 @@ public class Client {
 				
 				/* NOTE: down the line, there will be more of these SQL scripts, 
 				 * 		so I will create an ArrayList of File objects. There are 
-				 * 		just 2 File objects now, but in the future, there will be
+				 * 		just 3 File objects now, but in the future, there will be
 				 * 		enough to make the ArrayList worthwhile.
 				 */
 				File createEbayResults = new File(projectDirectoryPath+"/src/createEbaySearchResults.sql");
 				File createSearchList = new File(projectDirectoryPath+"/src/createSearchListTable.sql");
+				File insertInitialSearchValues = new File(projectDirectoryPath+"/src/InsertSearchListInitial.sql");
 				
 				ArrayList<File> sqlScripts = new ArrayList<File>();
 				sqlScripts.add(createSearchList);
 				sqlScripts.add(createEbayResults);
+				sqlScripts.add(insertInitialSearchValues);
 				 
 				Scanner fileScanner;
 				SQLiteExecutor se_c = new SQLiteExecutor(dataBase, null);
