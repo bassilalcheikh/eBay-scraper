@@ -24,7 +24,6 @@ public class EbayScraper implements Scraper{
 	private ChromeOptions chromeOptions;
 	
 	// CONSTRUCTORS 
-	
 	/*
 	 * The default constructor below will be used in future projects; for now, use the cconstructor on the bottom
 	public EbayScraper() {
@@ -103,11 +102,12 @@ public class EbayScraper implements Scraper{
 
 	// INSTANCE METHODS	
 	public String getSearchURL() {
+		// returns the URL with the arguments appended; string gets used in the Chromedriver instance
 		return "https://www.ebay.com/sch/i.html?_nkw="+searchBrand+" "+searchModel+"&_in_kw=1&_ex_kw=&_sacat=0&LH_Sold=1&_mPrRngCbx=1&_udlo="+lower_price_bound+"&_udhi="+upper_price_bound+"&_samilow=&_samihi=&_sadis=15&_stpos=60611&_sargn=-1%26saslc%3D1&_salic=1&_sop=12&_dmd=1&_ipg=200&LH_Complete=1&_fosrp=1";
 	}
 
 	public String[][] getScrapedResults() {
-		
+		// this method scrapes data from eBay; without this, the class is completely useless.
 		String baseUrl = getSearchURL();
 	    driver.get(baseUrl);
 	    
@@ -115,27 +115,27 @@ public class EbayScraper implements Scraper{
 	    String[] arrayTypes = {"String", "String", "String", "String", "int", "String", "String", "double", "double", "String", "String"};
 	    dataTypes = new ArrayList<String>(Arrays.asList(arrayTypes));
 	    
-	    // IDs - OK; need to use .getAttribute("iid");
+	    // IDs 
 	    List<WebElement> wd_id_list = driver.findElements(By.cssSelector("div[class='lvpic pic img left']"));
-	    // titles - good
+	    // titles 
 	    List<WebElement> wd_titles_list = driver.findElements(By.cssSelector("h3[class='lvtitle']"));
-	    // links - good
+	    // links 
 	    List<WebElement> wd_links_list = driver.findElements(By.cssSelector("a[class='vip']"));
-	    // auction times - good
+	    // auction times 
 	    List<WebElement> wd_times_list = driver.findElements(By.cssSelector("span[class='tme']"));	    
-	    // bid counts - good
+	    // bid counts 
 	    List<WebElement> wd_bids_list = driver.findElements(By.cssSelector("li[class='lvformat']"));
-	    // conditions - good
+	    // conditions 
 	    List<WebElement> wd_conditions_list = driver.findElements(By.cssSelector("div[class='lvsubtitle']"));
-	    // prices - ISSUE with multiple prices
+	    // prices 
 	    List<WebElement> wd_prices_list = driver.findElements(By.cssSelector("span[class='bold bidsold']"));
-	    // shipping - good
+	    // shipping cost
 	    List<WebElement> wd_shipping_list = driver.findElements(By.cssSelector("li[class='lvshipping']"));
 	    
 	    int scraped_listings_count = wd_id_list.size();
 	    
 	    ArrayList<String> wd_format_list = new ArrayList<String>();
-	    
+	    // the following looks at the bid count; if 0, then the listing was a "buy it now" rather than an auction
 	    for(int k = 0; k < scraped_listings_count; k++) {
 	    	String bid_value = wd_bids_list.get(k).getText();
 	    	if(bid_value.contentEquals("Best offer accepted") || bid_value.contentEquals("Buy It Now")) {
@@ -147,8 +147,6 @@ public class EbayScraper implements Scraper{
 	    }
 	    // ================================================================================================
 	    String[][] scraped_results = new String[scraped_listings_count][11];
-	    
-	    //DataCleanup DC = new DataCleanup();
 	    
 	    for(int i = 0; i < scraped_listings_count; i++) {
 	    	scraped_results[i] = new String[] {
@@ -168,7 +166,6 @@ public class EbayScraper implements Scraper{
 	    driver.close();
 	    return scraped_results;
 	}
-
 	@Override
 	public String toString() {
 		return "EbayScraper [searchBrand=" + searchBrand + ", searchModel=" + searchModel + "]";

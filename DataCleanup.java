@@ -133,7 +133,7 @@ public class DataCleanup {
 	}
 	
 	public static String removeApostrophe(String text) {
-		// remove apostrophe issue
+		// remove apostrophe issue so SQL script won't crash
 		String newString = "";
 		byte[] bytes;
 		try {

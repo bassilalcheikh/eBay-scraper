@@ -38,25 +38,25 @@ public class Client {
 				SQLiteExecutor se_i = null;
 				try {
 					se_i = new SQLiteExecutor(dataBase, "searchlist");
-					columns = se_i.getTableColumns();
+					columns = se_i.getTableColumns(); // gets columns from "searchlist" table 
 					
 					String[] desiredColumns =  new String[] {columns.get(1), columns.get(2), columns.get(3), columns.get(4)};
 					
-					rs_column_results = se_i.selectData(desiredColumns);
-					// displays data in "column_results" that will be used to feed arguments into ebay scraper
+					rs_column_results = se_i.selectData(desiredColumns); 
+					// (above) displays data in "column_results" that will be used to feed arguments into ebay scraper
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
 				// PART 2: launch webdriver code
-				se_i.setTableName("rawebaysearchresults");
+				se_i.setTableName("rawebaysearchresults"); // change tableName in SQLiteExecutor object to destination table where data will go
 				
 				try {	
+					// code below runs through all different items from 'searchresults' as arguments to scrape data
 					while(rs_column_results.next()) {
 						EbayScraper es = new EbayScraper(rs_column_results.getString(1), rs_column_results.getString(2), projectDirectoryPath );
 						es.setLower_price_bound(rs_column_results.getDouble(3));
-						es.setYear("2019");
+						es.setYear("2019"); // this will be changed in the next project iteration
 						
 						System.out.println("Process starting for: "+es.toString());
 						String[][] watches = es.getScrapedResults(); 
@@ -74,7 +74,7 @@ public class Client {
 				se_i.close();
 			}
 //================================================================================================================================================
-		
+			// this section allows you to "view" the data stored in the table, by way of "Select" SQL statements
 			else if (choice.toLowerCase().contentEquals("s")){
 				SQLiteExecutor sq_s = new SQLiteExecutor(dataBase, null);
 				
@@ -86,14 +86,17 @@ public class Client {
 				}
 				else if(section_choice.toLowerCase().equals("2")) {
 					sq_s.viewTableData("rawebaysearchresults");
-					
 				}
 				else {
 					System.out.println("Bad entry- try again.");
 				}
+				sq_s.close();
 			}
 //================================================================================================================================================
-			else if (choice.toLowerCase().contentEquals("v")) {				
+			// this section allows you to view price & time values for each watch sold in a line graph
+			else if (choice.toLowerCase().contentEquals("v")) {		
+				// this part queries the data from "searchlist," which will essentially be used in the menu selection
+				// for this section:
 				SQLiteExecutor sq_v = new SQLiteExecutor(dataBase, "searchlist");
 				
 				String[] menuOptionsColumns = new String[] {"search_id", "search_brand", "search_model"};
@@ -106,7 +109,7 @@ public class Client {
 					System.out.println("\n");
 				}
 				System.out.println("To view an item's trend, select its respective number from the menu above: ");
-				
+				// user chooses a watch's brand/model by selecting its index we've given it:
 				String section_choice = scan.nextLine();
 				int optionIndex = Integer.valueOf(section_choice);
 				
@@ -121,7 +124,8 @@ public class Client {
 					// and chosen model values come directly from admin-input values
 					String query_code = "SELECT julianday(sale_date_time), price FROM rawebaysearchresults WHERE brand = '"+chosen_brand+"' AND model = '"+chosen_model+"' ORDER BY sale_date_time ASC;";
 					ArrayList<String[]> query_code_results = sq_v.plainSelect(query_code); 
-					
+					// we used Julian values here because of issues with XChart not being friendly with datetime objects. 
+					// future iterations will likely not use the XChart library. For now, this works.
 					int data_points = query_code_results.size();
 					double[] datetimes = new double[data_points];
 					double[] prices = new double[data_points];
@@ -133,22 +137,21 @@ public class Client {
 										
 					XYChart chart = QuickChart.getChart(chart_title, "Time (in Julian days)", "Dollars", key_details, datetimes, prices);
 
-				    // Shows it
+				    // Shows it:
 				    SwingWrapper<XYChart> sw = new SwingWrapper<XYChart>(chart);
 				    sw.displayChart();
-				    
-				    sq_v.close();
 				}
 				else {
 					System.out.println("Sorry, option doesn't exist.");
 				}
+				sq_v.close();
 				
 			}
 //================================================================================================================================================			
+			// this section sets up tables in case they're not already set up. If they are set up, this section
+			// will not harm them or the program, because of the SQL scripts.
 			else if (choice.toLowerCase().contentEquals("c")){
-				
 				System.out.println("Setting up tables.");
-				
 				/* NOTE: down the line, there will be more of these SQL scripts, 
 				 * 		so I will create an ArrayList of File objects. There are 
 				 * 		just 3 File objects now, but in the future, there will be
@@ -183,6 +186,7 @@ public class Client {
 				    }		
 					se_c.plainExecute(sqlcode);
 				}   
+				se_c.close();
 			}
 //================================================================================================================================================			
 			else if(choice.toLowerCase().contentEquals("q")){
