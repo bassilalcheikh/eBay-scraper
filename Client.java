@@ -160,11 +160,13 @@ public class Client {
 				File createEbayResults = new File(projectDirectoryPath+"/src/createEbaySearchResults.sql");
 				File createSearchList = new File(projectDirectoryPath+"/src/createSearchListTable.sql");
 				File insertInitialSearchValues = new File(projectDirectoryPath+"/src/InsertSearchListInitial.sql");
+				File deleteMisplaced = new File(projectDirectoryPath+"/src/deleteMisplaced.sql");
 				
 				ArrayList<File> sqlScripts = new ArrayList<File>();
 				sqlScripts.add(createSearchList);
 				sqlScripts.add(createEbayResults);
 				sqlScripts.add(insertInitialSearchValues);
+				sqlScripts.add(deleteMisplaced);
 				 
 				Scanner fileScanner;
 				SQLiteExecutor se_c = new SQLiteExecutor(dataBase, null);
